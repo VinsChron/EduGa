@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 VinsChron - Months & Weeks Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Poppins', 'Comic Sans MS', cursive;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.1);
+            animation: floatAround 15s infinite linear;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(100px, 100px) rotate(120deg); }
+            66% { transform: translate(-50px, 200px) rotate(240deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        /* Particle Canvas */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .game-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 30px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 
+                        0 0 0 2px rgba(255, 255, 255, 0.5) inset;
+            max-width: 1400px;
+            width: 98%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 5em;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFE66D, #FF8A5C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 5px 5px 0 rgba(0,0,0,0.1);
+            margin: 0;
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.2));
+            animation: titlePulse 2s infinite;
+            letter-spacing: 5px;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.5em;
+            color: #2C3A47;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+        }
+
+        /* Tab Navigation */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .tab-btn {
+            padding: 20px 60px;
+            font-size: 2em;
+            border: none;
+            border-radius: 60px;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            color: #2C3A47;
+            font-weight: bold;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transform: perspective(500px) rotateX(5deg);
+            box-shadow: 0 15px 0 #95a5a6,
+                        0 20px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tab-btn:hover {
+            transform: perspective(500px) rotateX(2deg) translateY(-5px);
+            box-shadow: 0 20px 0 #95a5a6,
+                        0 25px 25px rgba(0,0,0,0.3);
+        }
+
+        .tab-btn.active {
+            transform: perspective(500px) rotateX(0deg) translateY(5px);
+            box-shadow: 0 10px 0 #7f8c8d,
+                        0 15px 15px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+        }
+
+        .tab-btn.month-tab {
+            background: linear-gradient(145deg, #FF6B6B, #FF4757);
+            color: white;
+            box-shadow: 0 15px 0 #C44545;
+        }
+
+        .tab-btn.week-tab {
+            background: linear-gradient(145deg, #4ECDC4, #45B7AA);
+            color: white;
+            box-shadow: 0 15px 0 #2F8F84;
+        }
+
+        .tab-icon {
+            font-size: 1.5em;
+        }
+
+        /* Content Area */
+        .content-area {
+            position: relative;
+            min-height: 700px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Robot Section (Common) */
+        .robot-section {
+            perspective: 2000px;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .robot-3d {
+            position: relative;
+            width: 350px;
+            height: 400px;
+            margin: 0 auto;
+            transform-style: preserve-3d;
+            animation: robotFloat 3s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.5s;
+        }
+
+        .robot-3d:hover {
+            transform: rotateY(15deg) rotateX(5deg) scale(1.1);
+        }
+
+        @keyframes robotFloat {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-20px) rotateX(5deg); }
+        }
+
+        /* Robot Head */
+        .robot-head-3d {
+            position: absolute;
+            width: 180px;
+            height: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 60px 60px 30px 30px;
+            box-shadow: 0 20px 0 #2C3E50,
+                        0 30px 30px rgba(0,0,0,0.3),
+                        inset 0 -10px 10px rgba(0,0,0,0.2),
+                        inset 0 10px 15px rgba(255,255,255,0.5);
+            border: 3px solid #2C3E50;
+            transition: all 0.3s;
+            z-index: 4;
+        }
+
+        /* Month Robot Theme */
+        .month-robot .robot-head-3d {
+            background: linear-gradient(145deg, #FF6B6B, #FF4757);
+        }
+
+        .month-robot .robot-body-3d {
+            background: linear-gradient(145deg, #FF8A5C, #FF6B4A);
+        }
+
+        .month-robot .arm-left-3d, .month-robot .arm-right-3d {
+            background: linear-gradient(145deg, #FF8A5C, #FF6B4A);
+        }
+
+        .month-robot .leg-left-3d, .month-robot .leg-right-3d {
+            background: linear-gradient(145deg, #FF8A5C, #FF6B4A);
+        }
+
+        /* Week Robot Theme */
+        .week-robot .robot-head-3d {
+            background: linear-gradient(145deg, #4ECDC4, #45B7AA);
+        }
+
+        .week-robot .robot-body-3d {
+            background: linear-gradient(145deg, #FFE66D, #FFD93D);
+        }
+
+        .week-robot .arm-left-3d, .week-robot .arm-right-3d {
+            background: linear-gradient(145deg, #FFE66D, #FFD93D);
+        }
+
+        .week-robot .leg-left-3d, .week-robot .leg-right-3d {
+            background: linear-gradient(145deg, #FFE66D, #FFD93D);
+        }
+
+        .robot-body-3d {
+            position: absolute;
+            width: 240px;
+            height: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 120px;
+            border-radius: 50px;
+            box-shadow: 0 25px 0 #2C3E50,
+                        0 30px 30px rgba(0,0,0,0.4),
+                        inset 0 -15px 15px rgba(0,0,0,0.3),
+                        inset 0 15px 20px rgba(255,255,255,0.6);
+            border: 3px solid #2C3E50;
+            transition: all 0.3s;
+            z-index: 3;
+        }
+
+        /* Robot Face */
+        .robot-eyes-3d {
+            display: flex;
+            justify-content: space-around;
+            padding: 30px 40px;
+        }
+
+        .eye-3d {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 5px 0 #95a5a6,
+                        inset 0 -5px 5px rgba(0,0,0,0.3),
+                        inset 0 5px 10px white;
+            animation: eyeBlink 3s infinite;
+        }
+
+        @keyframes eyeBlink {
+            0%, 48%, 52%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+
+        .eye-3d::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: #2c3e50;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            animation: pupilMove 3s infinite;
+        }
+
+        @keyframes pupilMove {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(5px, 5px); }
+            50% { transform: translate(-5px, -5px); }
+            75% { transform: translate(5px, -5px); }
+        }
+
+        .mouth-3d {
+            width: 80px;
+            height: 20px;
+            background: #FF6B6B;
+            margin: 0 auto;
+            border-radius: 40px;
+            box-shadow: 0 5px 0 #C44545,
+                        inset 0 2px 5px rgba(255,255,255,0.5);
+            transition: all 0.3s;
+        }
+
+        /* Antenna */
+        .antenna-3d {
+            position: absolute;
+            width: 15px;
+            height: 50px;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+            box-shadow: 0 5px 0 #CC954D;
+            animation: antennaGlow 1.5s infinite;
+        }
+
+        .month-robot .antenna-3d {
+            background: linear-gradient(90deg, #FFE66D, #FFD93D);
+            box-shadow: 0 5px 0 #CC954D, 0 0 20px #FFE66D;
+        }
+
+        .week-robot .antenna-3d {
+            background: linear-gradient(90deg, #FFE66D, #FFD93D);
+            box-shadow: 0 5px 0 #CC954D, 0 0 20px #FFE66D;
+        }
+
+        @keyframes antennaGlow {
+            0%, 100% { box-shadow: 0 0 20px #FFE66D; }
+            50% { box-shadow: 0 0 40px #FFE66D, 0 0 60px #FFD93D; }
+        }
+
+        .antenna-ball-3d {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: absolute;
+            top: -65px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 30px #FFE66D;
+            animation: ballPulse 1s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .month-robot .antenna-ball-3d {
+            background: radial-gradient(circle at 30% 30%, #FFE66D, #FFB347);
+        }
+
+        .week-robot .antenna-ball-3d {
+            background: radial-gradient(circle at 30% 30%, #FFE66D, #FFB347);
+        }
+
+        @keyframes ballPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
+        }
+
+        /* Arms */
+        .arm-left-3d, .arm-right-3d {
+            position: absolute;
+            width: 60px;
+            height: 180px;
+            top: 140px;
+            border-radius: 40px;
+            box-shadow: 0 15px 0 #2C3E50,
+                        inset 0 -10px 10px rgba(0,0,0,0.3);
+            border: 3px solid #2C3E50;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+
+        .arm-left-3d {
+            left: 30px;
+            transform: rotate(15deg);
+            transform-origin: top left;
+        }
+
+        .arm-right-3d {
+            right: 30px;
+            transform: rotate(-15deg);
+            transform-origin: top right;
+        }
+
+        .hand {
+            width: 50px;
+            height: 50px;
+            background: #FFD93D;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -20px;
+            left: 5px;
+            box-shadow: 0 8px 0 #CC954D,
+                        inset 0 -3px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        /* Legs */
+        .leg-left-3d, .leg-right-3d {
+            position: absolute;
+            width: 70px;
+            height: 150px;
+            top: 280px;
+            border-radius: 40px;
+            box-shadow: 0 20px 0 #2C3E50,
+                        inset 0 -10px 10px rgba(0,0,0,0.3);
+            border: 3px solid #2C3E50;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .leg-left-3d {
+            left: 70px;
+        }
+
+        .leg-right-3d {
+            right: 70px;
+        }
+
+        .foot {
+            width: 80px;
+            height: 30px;
+            background: #95a5a6;
+            border-radius: 40px;
+            position: absolute;
+            bottom: -20px;
+            left: -5px;
+            box-shadow: 0 8px 0 #7f8c8d;
+        }
+
+        /* Screen on body */
+        .body-screen {
+            width: 160px;
+            height: 80px;
+            background: linear-gradient(145deg, #1e272e, #2c3e50);
+            margin: 20px auto;
+            border-radius: 20px;
+            border: 4px solid #2c3e50;
+            box-shadow: inset 0 0 20px #00ff88;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #00ff88;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff88;
+            animation: screenFlicker 3s infinite;
+            padding: 5px;
+        }
+
+        .screen-title {
+            font-size: 0.9em;
+            color: #4ECDC4;
+        }
+
+        .screen-progress {
+            font-size: 1.2em;
+            color: #FFE66D;
+        }
+
+        @keyframes screenFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Damage Effects */
+        .robot-part {
+            transition: all 0.3s;
+        }
+
+        .damage-effect {
+            filter: drop-shadow(0 0 10px #FF6B6B);
+            animation: damageShake 0.3s infinite;
+        }
+
+        @keyframes damageShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5px, 5px) rotate(5deg); }
+            75% { transform: translate(-5px, -5px) rotate(-5deg); }
+        }
+
+        .spark {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #FFE66D;
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: sparkFade 0.5s forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes sparkFade {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(2); }
+        }
+
+        /* Energy Shield */
+        .energy-shield {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 3px solid #4ECDC4;
+            border-radius: 60px;
+            filter: blur(5px);
+            animation: shieldPulse 1.5s infinite;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        @keyframes shieldPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* Learning Section */
+        .learning-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .title-display {
+            text-align: center;
+            font-size: 4em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFE66D, #FF8A5C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+            animation: titleGlow 2s infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px #FF6B6B); }
+            50% { filter: drop-shadow(0 0 30px #4ECDC4); }
+        }
+
+        /* Spelling Area */
+        .spelling-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            perspective: 1000px;
+        }
+
+        .letter-box-3d {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 20px;
+            font-size: 3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            transform-style: preserve-3d;
+            transform: rotateX(10deg) rotateY(10deg);
+            box-shadow: -5px -5px 15px rgba(255,255,255,0.8),
+                        5px 5px 15px rgba(0,0,0,0.2),
+                        inset -2px -2px 5px rgba(0,0,0,0.1),
+                        inset 2px 2px 5px rgba(255,255,255,0.5);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.5);
+            position: relative;
+        }
+
+        .letter-box-3d:hover {
+            transform: rotateX(5deg) rotateY(5deg) scale(1.05);
+            box-shadow: -5px -5px 20px rgba(255,255,255,0.9),
+                        5px 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .letter-box-3d.filled {
+            background: linear-gradient(145deg, #a8e6cf, #7ed6df);
+            transform: rotateX(0deg) rotateY(0deg) scale(1.1);
+            box-shadow: 0 0 30px #4ECDC4;
+            animation: boxPop 0.5s;
+        }
+
+        @keyframes boxPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3) rotateX(360deg); }
+            100% { transform: scale(1.1); }
+        }
+
+        .letter-box-3d.correct {
+            animation: correctFlash 0.5s;
+        }
+
+        @keyframes correctFlash {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); box-shadow: 0 0 50px #4ECDC4; }
+        }
+
+        .letter-box-3d.wrong {
+            animation: wrongShake 0.5s;
+            background: linear-gradient(145deg, #ff7676, #ff6b6b);
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px) rotate(-10deg); }
+            75% { transform: translateX(15px) rotate(10deg); }
+        }
+
+        /* Delete button */
+        .delete-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: #FF6B6B;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 4px 0 #C44545;
+            transition: all 0.2s;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .letter-box-3d.filled:hover .delete-btn {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.2);
+            background: #FF4757;
+        }
+
+        .delete-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #C44545;
+        }
+
+        /* Letter Bank */
+        .letter-bank {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .letter-bank h3 {
+            text-align: center;
+            color: white;
+            font-size: 2em;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        .letters-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            min-height: 120px;
+        }
+
+        .draggable-letter-3d {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #FFE66D, #FFB347);
+            border-radius: 20px;
+            font-size: 3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: grab;
+            transform-style: preserve-3d;
+            transform: rotateX(10deg) rotateY(-10deg);
+            box-shadow: -5px -5px 15px rgba(255,255,255,0.5),
+                        5px 5px 20px rgba(0,0,0,0.3),
+                        0 10px 0 #CC954D;
+            transition: all 0.2s;
+            animation: letterFloat 2s infinite;
+            border: 2px solid rgba(255,255,255,0.5);
+            position: relative;
+        }
+
+        @keyframes letterFloat {
+            0%, 100% { transform: rotateX(10deg) rotateY(-10deg) translateY(0); }
+            50% { transform: rotateX(10deg) rotateY(-10deg) translateY(-10px); }
+        }
+
+        .draggable-letter-3d:active {
+            cursor: grabbing;
+            transform: scale(0.9) rotateX(20deg);
+            box-shadow: -2px -2px 5px rgba(255,255,255,0.5),
+                        2px 2px 10px rgba(0,0,0,0.2),
+                        0 5px 0 #CC954D;
+        }
+
+        .draggable-letter-3d.dragging {
+            opacity: 0.5;
+            transform: scale(0.8) rotateX(30deg);
+            filter: blur(2px);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn-3d {
+            padding: 15px 40px;
+            font-size: 1.8em;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(145deg, #4ECDC4, #45B7AA);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transform: perspective(500px) rotateX(10deg);
+            box-shadow: 0 15px 0 #2F8F84,
+                        0 20px 20px rgba(0,0,0,0.3);
+            transition: all 0.1s;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-3d:active {
+            transform: perspective(500px) rotateX(0deg) translateY(10px);
+            box-shadow: 0 5px 0 #2F8F84,
+                        0 15px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-3d.next {
+            background: linear-gradient(145deg, #FF8A5C, #FF6B4A);
+            box-shadow: 0 15px 0 #CC5A3A;
+        }
+
+        .btn-3d.delete-all {
+            background: linear-gradient(145deg, #FF6B6B, #FF4757);
+            box-shadow: 0 15px 0 #C44545;
+        }
+
+        .btn-3d.undo {
+            background: linear-gradient(145deg, #FFE66D, #FFD93D);
+            box-shadow: 0 15px 0 #CC954D;
+            color: #2C3A47;
+        }
+
+        /* Message Box */
+        .message-box {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2em;
+            color: white;
+            margin: 20px 0;
+            border: 2px solid rgba(255,255,255,0.5);
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            animation: messageGlow 2s infinite;
+        }
+
+        @keyframes messageGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+            50% { box-shadow: 0 0 40px rgba(255,255,255,0.6); }
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 2em;
+            color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        /* Lightning Effect */
+        .lightning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes lightningFlash {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 0.8; }
+        }
+
+        /* Celebration */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #FFE66D;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .tab-btn {
+                padding: 15px 30px;
+                font-size: 1.5em;
+            }
+            
+            .letter-box-3d, .draggable-letter-3d {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+            
+            .btn-3d {
+                padding: 10px 20px;
+                font-size: 1.2em;
+            }
+            
+            .title-display {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Animated Background -->
+    <div class="background-animation" id="backgroundAnimation"></div>
+
+    <!-- Lightning Effect -->
+    <div class="lightning" id="lightning"></div>
+
+    <!-- Celebration Container -->
+    <div class="celebration" id="celebration"></div>
+
+    <div class="game-container">
+        <div class="header">
+            <h1>📅 VINSCHRON</h1>
+            <div class="subtitle">Learn Months & Weeks with Fun!</div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <button class="tab-btn month-tab active" onclick="switchTab('months')" id="monthTab">
+                <span class="tab-icon">📆</span>
+                <span>MONTHS</span>
+                <span class="tab-icon">12</span>
+            </button>
+            <button class="tab-btn week-tab" onclick="switchTab('weeks')" id="weekTab">
+                <span class="tab-icon">📅</span>
+                <span>WEEKS</span>
+                <span class="tab-icon">7</span>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Months Content -->
+            <div id="monthsContent" class="tab-content active">
+                <!-- Months Game Will Be Injected Here -->
+            </div>
+
+            <!-- Weeks Content -->
+            <div id="weeksContent" class="tab-content">
+                <!-- Weeks Game Will Be Injected Here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA ====================
+        const months = [
+            { name: "JANUARY", spelling: "JANUARY" },
+            { name: "FEBRUARY", spelling: "FEBRUARY" },
+            { name: "MARCH", spelling: "MARCH" },
+            { name: "APRIL", spelling: "APRIL" },
+            { name: "MAY", spelling: "MAY" },
+            { name: "JUNE", spelling: "JUNE" },
+            { name: "JULY", spelling: "JULY" },
+            { name: "AUGUST", spelling: "AUGUST" },
+            { name: "SEPTEMBER", spelling: "SEPTEMBER" },
+            { name: "OCTOBER", spelling: "OCTOBER" },
+            { name: "NOVEMBER", spelling: "NOVEMBER" },
+            { name: "DECEMBER", spelling: "DECEMBER" }
+        ];
+
+        const weekDays = [
+            { name: "MONDAY", spelling: "MONDAY" },
+            { name: "TUESDAY", spelling: "TUESDAY" },
+            { name: "WEDNESDAY", spelling: "WEDNESDAY" },
+            { name: "THURSDAY", spelling: "THURSDAY" },
+            { name: "FRIDAY", spelling: "FRIDAY" },
+            { name: "SATURDAY", spelling: "SATURDAY" },
+            { name: "SUNDAY", spelling: "SUNDAY" }
+        ];
+
+        // ==================== GLOBAL STATE ====================
+        let currentTab = 'months';
+        let monthsState = {
+            currentIndex: 0,
+            currentLetters: [],
+            damageCount: 0,
+            damagedParts: [],
+            lastAction: null
+        };
+        
+        let weeksState = {
+            currentIndex: 0,
+            currentLetters: [],
+            damageCount: 0,
+            damagedParts: [],
+            lastAction: null
+        };
+
+        let particles = [];
+        let ctx;
+        let draggedElement = null;
+
+        // Robot Parts
+        const robotParts = [
+            { id: 'robotHead', name: 'head' },
+            { id: 'robotAntenna', name: 'antenna' },
+            { id: 'robotBody', name: 'body' },
+            { id: 'robotLeftArm', name: 'left-arm' },
+            { id: 'robotRightArm', name: 'right-arm' },
+            { id: 'robotLeftLeg', name: 'left-leg' },
+            { id: 'robotRightLeg', name: 'right-leg' }
+        ];
+
+        // ==================== INITIALIZATION ====================
+        function initGame() {
+            setupParticleCanvas();
+            createBackgroundLetters();
+            
+            // Initialize both games
+            initMonthsGame();
+            initWeeksGame();
+        }
+
+        function setupParticleCanvas() {
+            const canvas = document.getElementById('particleCanvas');
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            for(let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: (Math.random() - 0.5) * 1,
+                    size: Math.random() * 2 + 1,
+                    color: `hsl(${Math.random() * 360}, 70%, 60%)`
+                });
+            }
+            
+            animateParticles();
+        }
+
+        function animateParticles() {
+            if(!ctx) return;
+            
+            const canvas = document.getElementById('particleCanvas');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 5;
+            });
+            
+            requestAnimationFrame(animateParticles);
+        }
+
+        function createBackgroundLetters() {
+            const bg = document.getElementById('backgroundAnimation');
+            const elements = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+                            'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+                            'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+            
+            for(let i = 0; i < 30; i++) {
+                const el = document.createElement('div');
+                el.className = 'floating-element';
+                el.textContent = elements[Math.floor(Math.random() * elements.length)];
+                el.style.left = Math.random() * 100 + '%';
+                el.style.top = Math.random() * 100 + '%';
+                el.style.animationDelay = Math.random() * 10 + 's';
+                bg.appendChild(el);
+            }
+        }
+
+        // ==================== MONTHS GAME ====================
+        function initMonthsGame() {
+            const content = document.getElementById('monthsContent');
+            content.innerHTML = generateGameHTML('months', '📆', 12);
+            
+            // Set robot theme
+            document.querySelector('#monthsContent .robot-3d').classList.add('month-robot');
+            
+            // Initialize state
+            monthsState.currentLetters = new Array(months[0].spelling.length).fill('');
+            
+            // Setup event listeners
+            setupGameListeners('months');
+            
+            // Display first month
+            displayItem('months', 0);
+        }
+
+        // ==================== WEEKS GAME ====================
+        function initWeeksGame() {
+            const content = document.getElementById('weeksContent');
+            content.innerHTML = generateGameHTML('weeks', '📅', 7);
+            
+            // Set robot theme
+            document.querySelector('#weeksContent .robot-3d').classList.add('week-robot');
+            
+            // Initialize state
+            weeksState.currentLetters = new Array(weekDays[0].spelling.length).fill('');
+            
+            // Setup event listeners
+            setupGameListeners('weeks');
+            
+            // Display first day
+            displayItem('weeks', 0);
+        }
+
+        function generateGameHTML(type, emoji, count) {
+            const title = type === 'months' ? 'MONTHS' : 'WEEKS';
+            const progress = type === 'months' ? '12' : '7';
+            
+            return `
+                <!-- Robot Section -->
+                <div class="robot-section">
+                    <div class="robot-3d" id="${type}Robot">
+                        <!-- Head -->
+                        <div class="robot-head-3d robot-part" id="${type}Head">
+                            <div class="robot-face">
+                                <div class="robot-eyes-3d">
+                                    <div class="eye-3d"></div>
+                                    <div class="eye-3d"></div>
+                                </div>
+                                <div class="mouth-3d" id="${type}Mouth"></div>
+                            </div>
+                        </div>
+
+                        <!-- Antenna -->
+                        <div class="antenna-3d robot-part" id="${type}Antenna"></div>
+                        <div class="antenna-ball-3d robot-part" id="${type}AntennaBall">${count}</div>
+
+                        <!-- Body -->
+                        <div class="robot-body-3d robot-part" id="${type}Body">
+                            <div class="body-screen" id="${type}Screen">
+                                <div class="screen-title">${emoji} ${title}</div>
+                                <div class="screen-progress" id="${type}Progress">0/${count}</div>
+                            </div>
+                        </div>
+
+                        <!-- Arms -->
+                        <div class="arm-left-3d robot-part" id="${type}LeftArm">
+                            <div class="hand">${emoji}</div>
+                        </div>
+                        <div class="arm-right-3d robot-part" id="${type}RightArm">
+                            <div class="hand">✓</div>
+                        </div>
+
+                        <!-- Legs -->
+                        <div class="leg-left-3d robot-part" id="${type}LeftLeg">
+                            <div class="foot"></div>
+                        </div>
+                        <div class="leg-right-3d robot-part" id="${type}RightLeg">
+                            <div class="foot"></div>
+                        </div>
+
+                        <!-- Energy Shield -->
+                        <div class="energy-shield" id="${type}Shield"></div>
+                    </div>
+                </div>
+
+                <!-- Learning Section -->
+                <div class="learning-section">
+                    <div class="title-display" id="${type}Title">${months[0]?.name || weekDays[0]?.name}</div>
+                    
+                    <div class="spelling-area" id="${type}SpellingArea"></div>
+
+                    <div class="letter-bank">
+                        <h3>📦 MAGIC LETTERS</h3>
+                        <div class="letters-container" id="${type}LetterBank"></div>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn-3d" onclick="checkItem('${type}')">✓ CHECK</button>
+                        <button class="btn-3d next" onclick="nextItem('${type}')">→ NEXT</button>
+                        <button class="btn-3d delete-all" onclick="clearAllLetters('${type}')">🗑️ CLEAR</button>
+                        <button class="btn-3d undo" onclick="undoLastAction('${type}')">↩️ UNDO</button>
+                    </div>
+
+                    <div class="message-box" id="${type}Message">🚀 LET'S START! 🚀</div>
+                    <div class="progress" id="${type}Progress">ITEM 1 OF ${count}</div>
+                </div>
+            `;
+        }
+
+        function setupGameListeners(type) {
+            // Setup drag and drop for boxes
+            document.querySelectorAll(`#${type}SpellingArea .letter-box-3d`).forEach(box => {
+                box.addEventListener('dragover', (e) => e.preventDefault());
+                box.addEventListener('drop', (e) => handleDrop(e, type));
+            });
+        }
+
+        // ==================== COMMON GAME FUNCTIONS ====================
+        function displayItem(type, index) {
+            const data = type === 'months' ? months : weekDays;
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            const item = data[index];
+            document.getElementById(`${type}Title`).textContent = item.name;
+            
+            const spellingArea = document.getElementById(`${type}SpellingArea`);
+            spellingArea.innerHTML = '';
+            state.currentLetters = new Array(item.spelling.length).fill('');
+            
+            for(let i = 0; i < item.spelling.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'letter-box-3d';
+                box.id = `${type}Box-${i}`;
+                box.setAttribute('data-index', i);
+                box.setAttribute('data-type', type);
+                
+                const deleteBtn = document.createElement('div');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '✕';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeLetterFromBox(type, i);
+                };
+                box.appendChild(deleteBtn);
+                
+                box.addEventListener('dragover', (e) => e.preventDefault());
+                box.addEventListener('drop', (e) => handleDrop(e, type));
+                
+                spellingArea.appendChild(box);
+            }
+            
+            createLetterBank(type, item.spelling);
+            updateProgress(type);
+            updateScreenProgress(type);
+        }
+
+        function createLetterBank(type, word) {
+            const letters = word.split('');
+            
+            for(let i = letters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+            
+            const bank = document.getElementById(`${type}LetterBank`);
+            bank.innerHTML = '';
+            
+            letters.forEach((letter, index) => {
+                const letterDiv = document.createElement('div');
+                letterDiv.className = 'draggable-letter-3d';
+                letterDiv.textContent = letter;
+                letterDiv.setAttribute('draggable', 'true');
+                letterDiv.setAttribute('data-letter', letter);
+                letterDiv.setAttribute('data-id', `${type}-letter-${Date.now()}-${index}`);
+                letterDiv.setAttribute('data-type', type);
+                
+                letterDiv.addEventListener('dragstart', handleDragStart);
+                letterDiv.addEventListener('dragend', handleDragEnd);
+                
+                bank.appendChild(letterDiv);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.letter);
+            e.dataTransfer.setData('id', e.target.dataset.id);
+            e.dataTransfer.setData('type', e.target.dataset.type);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedElement = null;
+        }
+
+        function handleDrop(e, type) {
+            e.preventDefault();
+            
+            const box = e.target.closest('.letter-box-3d');
+            if(!box) return;
+            
+            const boxType = box.dataset.type || type;
+            const boxIndex = box.dataset.index;
+            const letter = e.dataTransfer.getData('text/plain');
+            const letterId = e.dataTransfer.getData('id');
+            const letterType = e.dataTransfer.getData('type');
+            
+            if(boxType !== letterType) return; // Prevent cross-tab dragging
+            
+            if(!box.classList.contains('filled')) {
+                const state = boxType === 'months' ? monthsState : weeksState;
+                
+                state.lastAction = {
+                    type: 'add',
+                    boxIndex: boxIndex,
+                    letter: letter,
+                    letterId: letterId
+                };
+                
+                createSparks(box.getBoundingClientRect().left, box.getBoundingClientRect().top);
+                
+                box.textContent = letter;
+                box.classList.add('filled');
+                
+                const deleteBtn = box.querySelector('.delete-btn');
+                if(deleteBtn) {
+                    box.appendChild(deleteBtn);
+                }
+                
+                const draggedLetter = document.querySelector(`[data-id="${letterId}"]`);
+                if(draggedLetter) {
+                    draggedLetter.remove();
+                }
+                
+                state.currentLetters[boxIndex] = letter;
+                updateScreenProgress(boxType);
+            }
+        }
+
+        function removeLetterFromBox(type, boxIndex) {
+            const box = document.getElementById(`${type}Box-${boxIndex}`);
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            if(box && box.classList.contains('filled')) {
+                const letter = state.currentLetters[boxIndex];
+                
+                state.lastAction = {
+                    type: 'remove',
+                    boxIndex: boxIndex,
+                    letter: letter
+                };
+                
+                createSparks(box.getBoundingClientRect().left, box.getBoundingClientRect().top, '#FF6B6B');
+                
+                returnLetterToBank(type, letter);
+                
+                box.textContent = '';
+                box.classList.remove('filled');
+                
+                const deleteBtn = box.querySelector('.delete-btn');
+                if(deleteBtn) {
+                    box.appendChild(deleteBtn);
+                }
+                
+                state.currentLetters[boxIndex] = '';
+                updateScreenProgress(type);
+            }
+        }
+
+        function returnLetterToBank(type, letter) {
+            const bank = document.getElementById(`${type}LetterBank`);
+            
+            const letterDiv = document.createElement('div');
+            letterDiv.className = 'draggable-letter-3d';
+            letterDiv.textContent = letter;
+            letterDiv.setAttribute('draggable', 'true');
+            letterDiv.setAttribute('data-letter', letter);
+            letterDiv.setAttribute('data-id', `${type}-letter-${Date.now()}`);
+            letterDiv.setAttribute('data-type', type);
+            
+            letterDiv.addEventListener('dragstart', handleDragStart);
+            letterDiv.addEventListener('dragend', handleDragEnd);
+            
+            bank.appendChild(letterDiv);
+        }
+
+        function clearAllLetters(type) {
+            const data = type === 'months' ? months : weekDays;
+            const state = type === 'months' ? monthsState : weeksState;
+            const item = data[state.currentIndex];
+            
+            const previousLetters = [...state.currentLetters];
+            
+            for(let i = 0; i < item.spelling.length; i++) {
+                if(state.currentLetters[i] && state.currentLetters[i] !== '') {
+                    returnLetterToBank(type, state.currentLetters[i]);
+                    
+                    const box = document.getElementById(`${type}Box-${i}`);
+                    if(box) {
+                        box.textContent = '';
+                        box.classList.remove('filled');
+                        
+                        const deleteBtn = box.querySelector('.delete-btn');
+                        if(deleteBtn) {
+                            box.appendChild(deleteBtn);
+                        }
+                    }
+                }
+            }
+            
+            state.lastAction = {
+                type: 'clear',
+                previousLetters: previousLetters
+            };
+            
+            state.currentLetters = new Array(item.spelling.length).fill('');
+            createSparks(window.innerWidth/2, window.innerHeight/2, '#FFE66D');
+            showMessage(type, '🧹 ALL CLEARED!', '#FFE66D');
+            updateScreenProgress(type);
+        }
+
+        function undoLastAction(type) {
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            if(state.lastAction) {
+                if(state.lastAction.type === 'add') {
+                    removeLetterFromBox(type, state.lastAction.boxIndex);
+                } else if(state.lastAction.type === 'remove') {
+                    const box = document.getElementById(`${type}Box-${state.lastAction.boxIndex}`);
+                    if(box && !box.classList.contains('filled')) {
+                        box.textContent = state.lastAction.letter;
+                        box.classList.add('filled');
+                        
+                        state.currentLetters[state.lastAction.boxIndex] = state.lastAction.letter;
+                        
+                        const bankLetter = document.querySelector(`[data-letter="${state.lastAction.letter}"][data-type="${type}"]`);
+                        if(bankLetter) {
+                            bankLetter.remove();
+                        }
+                    }
+                } else if(state.lastAction.type === 'clear') {
+                    const data = type === 'months' ? months : weekDays;
+                    const item = data[state.currentIndex];
+                    
+                    for(let i = 0; i < item.spelling.length; i++) {
+                        if(state.lastAction.previousLetters[i] && state.lastAction.previousLetters[i] !== '') {
+                            const box = document.getElementById(`${type}Box-${i}`);
+                            if(box && !box.classList.contains('filled')) {
+                                box.textContent = state.lastAction.previousLetters[i];
+                                box.classList.add('filled');
+                                
+                                state.currentLetters[i] = state.lastAction.previousLetters[i];
+                                
+                                const bankLetter = document.querySelector(`[data-letter="${state.lastAction.previousLetters[i]}"][data-type="${type}"]`);
+                                if(bankLetter) {
+                                    bankLetter.remove();
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                state.lastAction = null;
+                showMessage(type, '↩️ UNDO DONE!', '#FFE66D');
+                updateScreenProgress(type);
+            } else {
+                showMessage(type, '⚠️ NOTHING TO UNDO!', '#FF6B6B');
+            }
+        }
+
+        function checkItem(type) {
+            const data = type === 'months' ? months : weekDays;
+            const state = type === 'months' ? monthsState : weeksState;
+            const item = data[state.currentIndex];
+            const correctSpelling = item.spelling.split('');
+            
+            let filledCount = state.currentLetters.filter(l => l && l !== '').length;
+            
+            if(filledCount < correctSpelling.length) {
+                showMessage(type, '📦 SAB LETTERS RAKHO!', '#FF6B6B');
+                return;
+            }
+            
+            let correct = true;
+            for(let i = 0; i < correctSpelling.length; i++) {
+                if(state.currentLetters[i] !== correctSpelling[i]) {
+                    correct = false;
+                    
+                    const box = document.getElementById(`${type}Box-${i}`);
+                    box.classList.add('wrong');
+                    setTimeout(() => box.classList.remove('wrong'), 500);
+                    
+                    const rect = box.getBoundingClientRect();
+                    for(let j = 0; j < 3; j++) {
+                        createSparks(rect.left + rect.width/2, rect.top + rect.height/2, '#FF6B6B');
+                    }
+                } else {
+                    const box = document.getElementById(`${type}Box-${i}`);
+                    box.classList.add('correct');
+                    setTimeout(() => box.classList.remove('correct'), 500);
+                }
+            }
+            
+            if(correct) {
+                showMessage(type, '🎉 SHABASH! CORRECT! 🎉', '#4ECDC4');
+                
+                for(let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        createSparks(
+                            Math.random() * window.innerWidth,
+                            Math.random() * window.innerHeight,
+                            '#4ECDC4'
+                        );
+                    }, i * 50);
+                }
+                
+                if(state.damageCount > 0) {
+                    state.damageCount--;
+                    state.damagedParts.pop();
+                    updateRobotDamage(type);
+                } else {
+                    document.getElementById(`${type}Shield`).style.opacity = '1';
+                    setTimeout(() => {
+                        document.getElementById(`${type}Shield`).style.opacity = '0.3';
+                    }, 1000);
+                }
+                
+                if(state.currentIndex === data.length - 1) {
+                    celebrateWin(type);
+                }
+            } else {
+                damageRobot(type);
+                showMessage(type, '❌ GALAT! ROBOT KO CHOT LAGI! ❌', '#FF6B6B');
+                
+                document.getElementById('lightning').style.animation = 'lightningFlash 0.2s';
+                setTimeout(() => {
+                    document.getElementById('lightning').style.animation = '';
+                }, 200);
+            }
+        }
+
+        function damageRobot(type) {
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            if(state.damageCount < robotParts.length) {
+                const part = robotParts[state.damageCount];
+                state.damagedParts.push(part.name);
+                state.damageCount++;
+                
+                const element = document.getElementById(`${type}${part.id.replace('robot', '')}`);
+                if(element) {
+                    const rect = element.getBoundingClientRect();
+                    for(let i = 0; i < 8; i++) {
+                        createSparks(rect.left + rect.width/2, rect.top + rect.height/2, '#FF6B6B');
+                    }
+                }
+            }
+            
+            updateRobotDamage(type);
+            
+            if(state.damageCount >= robotParts.length) {
+                document.getElementById(`${type}Robot`).classList.add('damage-effect');
+                showMessage(type, '💥 ROBOT BLAST! TRY AGAIN! 💥', '#FF0000');
+                
+                const rect = document.getElementById(`${type}Robot`).getBoundingClientRect();
+                for(let i = 0; i < 40; i++) {
+                    setTimeout(() => {
+                        createSparks(
+                            rect.left + rect.width/2 + (Math.random() - 0.5) * 200,
+                            rect.top + rect.height/2 + (Math.random() - 0.5) * 200,
+                            '#FF0000'
+                        );
+                    }, i * 15);
+                }
+                
+                setTimeout(() => {
+                    resetCurrentItem(type);
+                }, 1500);
+            }
+        }
+
+        function updateRobotDamage(type) {
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            robotParts.forEach(part => {
+                const element = document.getElementById(`${type}${part.id.replace('robot', '')}`);
+                if(element) {
+                    element.style.filter = 'none';
+                    element.style.transform = '';
+                }
+            });
+            
+            state.damagedParts.forEach(partName => {
+                const part = robotParts.find(p => p.name === partName);
+                if(part) {
+                    const element = document.getElementById(`${type}${part.id.replace('robot', '')}`);
+                    if(element) {
+                        element.style.filter = 'drop-shadow(0 0 10px #FF6B6B)';
+                        
+                        if(partName.includes('arm')) {
+                            element.style.transform += ' rotate(40deg)';
+                        }
+                        if(partName.includes('leg')) {
+                            element.style.transform += ' rotate(20deg)';
+                        }
+                        if(partName === 'head') {
+                            element.style.transform += ' rotate(15deg)';
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetCurrentItem(type) {
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            state.damageCount = 0;
+            state.damagedParts = [];
+            updateRobotDamage(type);
+            document.getElementById(`${type}Robot`).classList.remove('damage-effect');
+            
+            displayItem(type, state.currentIndex);
+            showMessage(type, '🔄 TRY AGAIN! YOU CAN DO IT! 🔄', '#FFE66D');
+        }
+
+        function nextItem(type) {
+            const data = type === 'months' ? months : weekDays;
+            const state = type === 'months' ? monthsState : weeksState;
+            
+            if(state.currentIndex < data.length - 1) {
+                const item = data[state.currentIndex];
+                const filledCount = state.currentLetters.filter(l => l && l !== '').length;
+                
+                if(filledCount < item.spelling.length) {
+                    showMessage(type, '⚠️ PEHLE COMPLETE KARO! ⚠️', '#FF6B6B');
+                    return;
+                }
+                
+                let correct = true;
+                for(let i = 0; i < item.spelling.length; i++) {
+                    if(state.currentLetters[i] !== item.spelling[i]) {
+                        correct = false;
+                        break;
+                    }
+                }
+                
+                if(!correct) {
+                    showMessage(type, '⚠️ SPELLING SAHI KARO! ⚠️', '#FF6B6B');
+                    return;
+                }
+                
+                state.currentIndex++;
+                displayItem(type, state.currentIndex);
+                updateProgress(type);
+                resetRobotForType(type);
+                showMessage(type, `🚀 ${data[state.currentIndex].name}! 🚀`, '#4ECDC4');
+            } else {
+                celebrateWin(type);
+            }
+        }
+
+        function resetRobotForType(type) {
+            const state = type === 'months' ? monthsState : weeksState;
+            state.damageCount = 0;
+            state.damagedParts = [];
+            updateRobotDamage(type);
+            document.getElementById(`${type}Robot`).classList.remove('damage-effect');
+        }
+
+        function updateProgress(type) {
+            const data = type === 'months' ? months : weekDays;
+            const state = type === 'months' ? monthsState : weeksState;
+            const total = data.length;
+            document.getElementById(`${type}Progress`).textContent = `ITEM ${state.currentIndex + 1} OF ${total}`;
+        }
+
+        function updateScreenProgress(type) {
+            const state = type === 'months' ? monthsState : weeksState;
+            const data = type === 'months' ? months : weekDays;
+            const item = data[state.currentIndex];
+            const filledCount = state.currentLetters.filter(l => l && l !== '').length;
+            document.getElementById(`${type}Progress`).textContent = `${filledCount}/${item.spelling.length}`;
+        }
+
+        function showMessage(type, text, color) {
+            const msgBox = document.getElementById(`${type}Message`);
+            if(msgBox) {
+                msgBox.textContent = text;
+                msgBox.style.background = color;
+                msgBox.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    msgBox.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+
+        function createSparks(x, y, color = '#FFE66D') {
+            for(let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const spark = document.createElement('div');
+                    spark.className = 'spark';
+                    spark.style.left = (x + (Math.random() - 0.5) * 30) + 'px';
+                    spark.style.top = (y + (Math.random() - 0.5) * 30) + 'px';
+                    spark.style.backgroundColor = color;
+                    document.body.appendChild(spark);
+                    setTimeout(() => spark.remove(), 500);
+                }, i * 50);
+            }
+        }
+
+        function celebrateWin(type) {
+            const celebration = document.getElementById('celebration');
+            celebration.style.display = 'block';
+            
+            showMessage(type, '🏆 CONGRATULATIONS! ALL COMPLETE! 🏆', '#FFE66D');
+            
+            for(let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    celebration.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+            
+            const robot = document.getElementById(`${type}Robot`);
+            robot.style.animation = 'robotFloat 0.3s infinite';
+            
+            setTimeout(() => {
+                celebration.style.display = 'none';
+                robot.style.animation = 'robotFloat 3s ease-in-out infinite';
+                
+                if(confirm('🎮 PLAY AGAIN?')) {
+                    if(type === 'months') {
+                        monthsState.currentIndex = 0;
+                        displayItem('months', 0);
+                        updateProgress('months');
+                        resetRobotForType('months');
+                    } else {
+                        weeksState.currentIndex = 0;
+                        displayItem('weeks', 0);
+                        updateProgress('weeks');
+                        resetRobotForType('weeks');
+                    }
+                }
+            }, 5000);
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.getElementById('monthTab').classList.toggle('active', tab === 'months');
+            document.getElementById('weekTab').classList.toggle('active', tab === 'weeks');
+            
+            // Update content
+            document.getElementById('monthsContent').classList.toggle('active', tab === 'months');
+            document.getElementById('weeksContent').classList.toggle('active', tab === 'weeks');
+        }
+
+        // ==================== START GAME ====================
+        initGame();
+    </script>
+</body>
+</html>
